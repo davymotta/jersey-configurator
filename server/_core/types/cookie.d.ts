@@ -1,6 +1,2 @@
-declare module "cookie" {
-  export function parse(
-    str: string,
-    options?: Record<string, unknown>
-  ): Record<string, string>;
-}
+// Cookie ships its own TypeScript declarations.
+export {};
