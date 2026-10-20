@@ -1,5 +1,5 @@
 {
-  "name": "jersey-configurator",
+  "name": "dreamteam",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "test": "vitest run --config vitest.config.ts",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:dxf": "python3 -m unittest discover -s pipeline -p \"test_*.py\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
@@ -79,8 +80,11 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.186.1",
+    "three-gpu-pathtracer": "0.0.23",
+    "three-mesh-bvh": "0.8.3",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
+    "xatlas-web": "0.1.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {

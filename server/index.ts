@@ -36,9 +36,7 @@ if (!production) {
   app.get("*", (_req, res) => res.sendFile(path.join(publicDir, "index.html")));
 }
 server.listen(Number(process.env.PORT || 3000), "0.0.0.0", () =>
-  console.log(
-    "Jersey Configurator running on port " + (process.env.PORT || 3000)
-  )
+  console.log("DreamTeam running on port " + (process.env.PORT || 3000))
 );
 function shutdown() {
   server.close(() => {

@@ -26,6 +26,7 @@ import { api, money, date } from "./saas/api";
 import { FlatJersey } from "./saas/Preview";
 import Studio from "./saas/Studio";
 import Orders from "./saas/Orders";
+import GarmentLab from "./saas/GarmentLab";
 import { Patterns, WorkspaceSettings } from "./saas/Workspace";
 import {
   DEFAULT_DESIGN,
@@ -123,7 +124,7 @@ export default function App() {
     return (
       <div className="loading-screen">
         <Shirt />
-        <span>Jersey</span>
+        <span>DreamTeam</span>
         <Loader2 className="spin" size={18} />
       </div>
     );
@@ -151,6 +152,7 @@ export default function App() {
     },
     ...(session.user.role === "owner"
       ? [
+          { href: "/garments", label: "Garment lab", icon: Box },
           { href: "/patterns", label: "Cartamodelli", icon: Scissors },
           { href: "/settings", label: "Impostazioni", icon: Settings },
         ]
@@ -161,6 +163,7 @@ export default function App() {
     "/studio": "Design studio",
     "/designs": "I miei design",
     "/orders": "Ordini",
+    "/garments": "Garment lab",
     "/patterns": "Cartamodelli",
     "/settings": "Impostazioni",
   };
@@ -181,7 +184,7 @@ export default function App() {
           <span className="brand-mark">
             <Shirt size={22} />
           </span>
-          jersey<span className="brand-dot">.</span>
+          DreamTeam
         </Link>
         <div className="workspace-switch">
           <div className="workspace-monogram">
@@ -219,9 +222,9 @@ export default function App() {
         <div className="sidebar-bottom">
           <div className="sidebar-note">
             <Box size={21} />
-            <strong>Dal concept al capo.</strong>
+            <strong>Built for the beautiful game.</strong>
             <p>
-              Design, ordini e produzione.
+              Divise, squadre e produzione.
               <br />
               Tutto nello stesso spazio.
             </p>
@@ -297,7 +300,7 @@ export default function App() {
           </div>
         )}
         <main
-          className={`content ${active === "/studio" ? "studio-content" : ""}`}
+          className={`content ${active === "/studio" ? "studio-content" : ""} ${active === "/garments" ? "lab-content" : ""}`}
         >
           {dataError ? (
             <div className="error-banner">
@@ -318,6 +321,8 @@ export default function App() {
             />
           ) : path === "/orders" ? (
             <Orders session={session} orders={orders} refresh={refresh} />
+          ) : path === "/garments" && session.user.role === "owner" ? (
+            <GarmentLab />
           ) : path === "/patterns" && session.user.role === "owner" ? (
             <Patterns />
           ) : path === "/settings" && session.user.role === "owner" ? (
@@ -334,7 +339,7 @@ export default function App() {
           )}
         </main>
         <footer className="app-footer">
-          <span>Jersey · Design to production</span>
+          <span>DreamTeam · From dream to team</span>
           <span>Il tuo prossimo capo inizia qui.</span>
         </footer>
       </div>
@@ -386,7 +391,7 @@ function Welcome({
           <span className="brand-mark">
             <Shirt size={22} />
           </span>
-          jersey<span className="brand-dot">.</span>
+          DreamTeam
         </Link>
         <div className="welcome-copy">
           <span className="eyebrow light">DESIGN TO PRODUCTION</span>
@@ -398,8 +403,8 @@ function Welcome({
             <em>divisa preferita.</em>
           </h1>
           <p>
-            Lo spazio dove i fabbricanti di teamwear trasformano la creatività
-            in ordini pronti da gestire.
+            Lo spazio dove i fabbricanti di divise da calcio trasformano la
+            creatività in ordini pronti da gestire.
           </p>
           <div className="welcome-tags">
             <span>
@@ -419,7 +424,7 @@ function Welcome({
             </div>
           </div>
         </div>
-        <small>Calcio · Cricket · Corporate teamwear</small>
+        <small>FOR THE BEAUTIFUL GAME / FOOTBALL ONLY</small>
       </section>
       <section className="welcome-form">
         <div className="auth-card">
@@ -481,7 +486,7 @@ function Welcome({
             {!storeSlug && (
               <Field label="Indirizzo workspace">
                 <div className="input-prefix">
-                  <span>jersey /</span>
+                  <span>dreamteam /</span>
                   <input
                     name="slug"
                     required
@@ -582,213 +587,172 @@ function Dashboard({
   orders: Order[];
 }) {
   const pending = orders.filter(o => o.status === "submitted").length,
-    production = orders.filter(o => o.status === "production").length,
-    total = orders
-      .filter(o => o.status !== "cancelled")
-      .reduce((a, o) => a + o.total, 0);
+    production = orders.filter(o => o.status === "production").length;
   return (
     <>
-      <div className="page-heading">
+      <div className="dashboard-intro">
         <div>
-          <span className="eyebrow">IL TUO WORKSPACE, A COLPO D’OCCHIO</span>
+          <span className="eyebrow">DREAMTEAM / CLUB WORKSPACE</span>
           <h1>
-            Ciao, {session.user.name.split(" ")[0]}{" "}
-            <span className="wave">
-              <ArrowUpRight size={27} />
-            </span>
+            Ciao, {session.user.name.split(" ")[0]}
+            <span className="intro-dot">.</span>
           </h1>
-          <p>Diamo forma alla prossima grande divisa.</p>
+          <p>La tua prossima stagione comincia da qui.</p>
         </div>
         <Link href="/studio" className="btn primary">
-          <Plus size={17} />
-          Nuovo design
+          <Plus size={16} />
+          Nuova divisa
         </Link>
       </div>
-      <section className="dashboard-hero">
-        <div>
-          <span className="hero-tag">
-            <span /> DALL’IDEA ALLA PRODUZIONE
-          </span>
+      <div className="club-overview">
+        <section className="club-editorial">
+          <div className="editorial-kicker">
+            <span className="live-dot" />
+            FOR THE BEAUTIFUL GAME<span>EST. 2026</span>
+          </div>
           <h2>
-            Il tuo design.
+            Una squadra.
             <br />
-            Pronto a scendere in campo.
+            Un’identità.
+            <br />
+            <em>Il vostro kit.</em>
           </h2>
           <p>
-            Crea una divisa unica, esplorala in 3D e porta
-            <br className="desktop" /> ogni dettaglio fino al fabbricante.
+            Dall’idea al tessuto. Uno studio di progettazione
+            <br />
+            per chi porta il calcio addosso.
           </p>
-          <Link href="/studio" className="btn lime">
-            Apri il design studio <ArrowUpRight size={17} />
+          <Link className="editorial-link" href="/studio">
+            Entra nel design studio <ArrowUpRight size={20} />
           </Link>
-          <span className="hero-bottom">
-            <span>01 / CREA</span>
-            <span>02 / VISUALIZZA</span>
-            <span>03 / PRODUCI</span>
-          </span>
-        </div>
-        <div className="hero-visual">
-          <div className="hero-ring ring-one" />
-          <div className="hero-ring ring-two" />
-          <FlatJersey design={designs[0] || DEFAULT_DESIGN} />
-          <div className="hero-chip">
-            <Box size={16} />
+          <div className="editorial-bottom">
+            <span>01 / DESIGN</span>
+            <span>02 / DRAPE</span>
+            <span>03 / PRODUCE</span>
+          </div>
+          <div className="editorial-number">10</div>
+        </section>
+        <section className="club-season">
+          <div>
+            <span className="eyebrow">SEASON / 26—27</span>
+            <Badge green>Club workspace</Badge>
+          </div>
+          <h3>Il tuo spogliatoio digitale.</h3>
+          <div className="club-metrics">
             <div>
-              DAL DIGITALE AL TESSUTO
-              <small>Ogni dettaglio, nello stesso flusso.</small>
+              <span>DESIGN</span>
+              <strong>{designs.length.toString().padStart(2, "0")}</strong>
+              <Palette size={18} />
+            </div>
+            <div>
+              <span>DA APPROVARE</span>
+              <strong>{pending.toString().padStart(2, "0")}</strong>
+              <ShoppingBag size={18} />
+            </div>
+            <div>
+              <span>IN PRODUZIONE</span>
+              <strong>{production.toString().padStart(2, "0")}</strong>
+              <Factory size={18} />
             </div>
           </div>
-        </div>
-      </section>
-      <section className="stats-grid">
-        {[
-          {
-            label: "Design salvati",
-            value: designs.length,
-            sub: "La tua libreria creativa",
-            icon: Palette,
-          },
-          {
-            label: "Ordini da approvare",
-            value: pending,
-            sub: "In attesa del fabbricante",
-            icon: ShoppingBag,
-          },
-          {
-            label: "In produzione",
-            value: production,
-            sub: "Dal progetto al prodotto",
-            icon: Factory,
-          },
-          {
-            label: "Valore richieste",
-            value: money(total),
-            sub: "Esclusi gli ordini annullati",
-            icon: Layers,
-          },
-        ].map(({ label, value, sub, icon: Icon }) => (
-          <article className="stat-card" key={label}>
+          <Link
+            href={session.user.role === "owner" ? "/garments" : "/orders"}
+            className="lab-entry"
+          >
+            <Scissors size={20} />
             <div>
-              <span>{label}</span>
-              <Icon size={18} />
+              <strong>
+                {session.user.role === "owner"
+                  ? "Il tuo DXF. Il tuo capo."
+                  : "La squadra è pronta?"}
+              </strong>
+              <small>
+                {session.user.role === "owner"
+                  ? "Pannelli, cuciture e simulazione del tessuto."
+                  : "Segui il percorso delle tue divise."}
+              </small>
             </div>
-            <strong>{value}</strong>
-            <small>{sub}</small>
-          </article>
-        ))}
-      </section>
-      <div className="section-heading">
-        <div>
-          <h2>La tua prossima creazione</h2>
-          <p>Un percorso semplice, un risultato tutto tuo.</p>
-        </div>
-        <span className="subtle">PENSATO PER IL TEAMWEAR</span>
-      </div>
-      <section className="workflow-grid">
-        {[
-          {
-            n: "01",
-            icon: Sparkles,
-            title: "Dai spazio alle idee",
-            copy: "Palette, pattern e AI per una divisa che lascia il segno.",
-            link: "/studio",
-            cta: "Inizia a creare",
-          },
-          {
-            n: "02",
-            icon: Box,
-            title: "Guardala da ogni lato",
-            copy: "Colori e personalizzazioni su un’anteprima 3D interattiva.",
-            link: "/studio",
-            cta: "Esplora lo studio",
-          },
-          {
-            n: "03",
-            icon: Scissors,
-            title: "Portala in produzione",
-            copy: "Taglie, cartamodelli e pannelli per un passaggio di consegne preciso.",
-            link: session.user.role === "owner" ? "/patterns" : "/orders",
-            cta: "Gestisci il prossimo passo",
-          },
-        ].map(({ n, icon: Icon, title, copy, link, cta }) => (
-          <Link href={link} key={n} className="workflow-card">
-            <div>
-              <span className="workflow-icon">
-                <Icon size={21} />
-              </span>
-              <span>{n}</span>
-            </div>
-            <h3>{title}</h3>
-            <p>{copy}</p>
-            <span className="card-link">
-              {cta}
-              <ArrowRight size={16} />
-            </span>
+            <ArrowUpRight size={17} />
           </Link>
-        ))}
-      </section>
+        </section>
+      </div>
       <div className="section-heading">
         <div>
-          <h2>Design recenti</h2>
-          <p>Riprendi da dove nasce l’ispirazione.</p>
+          <span className="eyebrow">THE KIT ROOM</span>
+          <h2>Le tue divise</h2>
         </div>
         <Link href="/designs" className="text-link">
-          Tutti i design <ArrowRight size={16} />
+          Tutti i design <ArrowRight size={15} />
         </Link>
       </div>
       <div className="design-grid">
         {designs.slice(0, 3).map(d => (
           <DesignCard key={d.id} design={d} />
         ))}
-        <Link href="/studio" className="new-design-card">
+        <Link className="new-design-card" href="/studio">
           <span>
-            <Plus size={24} />
+            <Plus size={25} />
           </span>
-          <strong>Un’altra idea?</strong>
-          <small>Crea un nuovo design</small>
+          <strong>Il prossimo kit è tuo.</strong>
+          <small>Inizia da un foglio bianco</small>
         </Link>
       </div>
-      {orders.length > 0 && (
-        <>
-          <div className="section-heading">
-            <h2>Ultimi ordini</h2>
-            <Link className="text-link" href="/orders">
-              Gestisci ordini <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ordine</th>
-                  <th>Design</th>
-                  <th>Capi</th>
-                  <th>Stato</th>
-                  <th>Data</th>
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">FROM THE STUDIO TO THE PITCH</span>
+          <h2>La stagione, in movimento.</h2>
+        </div>
+        <Link className="text-link" href="/orders">
+          Tutti gli ordini <ArrowRight size={15} />
+        </Link>
+      </div>
+      {orders.length ? (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ordine</th>
+                <th>Divisa</th>
+                <th>Capi</th>
+                <th>Stato</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.slice(0, 4).map(o => (
+                <tr key={o.id}>
+                  <td>
+                    <Link className="text-link" href="/orders">
+                      {o.reference}
+                    </Link>
+                  </td>
+                  <td>{o.design.name}</td>
+                  <td>{o.quantity}</td>
+                  <td>
+                    <Badge green={o.status === "shipped"}>
+                      {STATUS_LABELS[o.status]}
+                    </Badge>
+                  </td>
+                  <td>{date(o.createdAt)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {orders.slice(0, 4).map(o => (
-                  <tr key={o.id}>
-                    <td>
-                      <Link className="text-link" href="/orders">
-                        {o.reference}
-                      </Link>
-                    </td>
-                    <td>{o.design.name}</td>
-                    <td>{o.quantity}</td>
-                    <td>
-                      <Badge green={o.status === "shipped"}>
-                        {STATUS_LABELS[o.status]}
-                      </Badge>
-                    </td>
-                    <td>{date(o.createdAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="club-empty-order">
+          <span className="empty-order-number">00</span>
+          <div>
+            <strong>Le grandi stagioni iniziano con un’idea.</strong>
+            <p>
+              Conferma design, taglie e quantità. Qui seguirai il percorso fino
+              alla produzione.
+            </p>
           </div>
-        </>
+          <Link href="/studio" className="text-link">
+            Crea il primo kit <ArrowUpRight size={17} />
+          </Link>
+        </div>
       )}
     </>
   );
@@ -840,17 +804,15 @@ function Designs({ designs }: { designs: SavedDesign[] }) {
       </div>
       <div className="filter-bar">
         <div className="filter-tabs">
-          {[["all", "Tutti"], ...Object.entries(categoryNames)].map(
-            ([v, l]) => (
-              <button
-                key={v}
-                className={filter === v ? "selected" : ""}
-                onClick={() => setFilter(v)}
-              >
-                {l}
-              </button>
-            )
-          )}
+          {[["all", "Tutti"], ...[["football", "Calcio"]]].map(([v, l]) => (
+            <button
+              key={v}
+              className={filter === v ? "selected" : ""}
+              onClick={() => setFilter(v)}
+            >
+              {l}
+            </button>
+          ))}
         </div>
         <input
           aria-label="Cerca design"

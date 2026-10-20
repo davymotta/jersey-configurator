@@ -117,3 +117,8 @@ data/
 playwright-report/
 test-results/
 artifacts/
+
+# Python worker runtime
+__pycache__/
+*.pyc
+.venv/

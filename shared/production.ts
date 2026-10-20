@@ -25,6 +25,7 @@ export const designSchema = z.object({
   player: z.string().trim().max(24),
   prompt: z.string().max(1500).default(""),
   artworkId: z.string().uuid().nullable().default(null),
+  garmentId: z.string().uuid().nullable().default(null),
 });
 export type Design = z.infer<typeof designSchema>;
 export type SavedDesign = Design & {
@@ -40,11 +41,12 @@ export const DEFAULT_DESIGN: Design = {
   secondary: "#d5ec7b",
   accent: "#f6f4ea",
   textColor: "#ffffff",
-  team: "ATHLETIC CLUB",
+  team: "DREAMTEAM FC",
   player: "ROSSI",
   number: "10",
   prompt: "",
   artworkId: null,
+  garmentId: null,
 };
 const svgPath = z
   .string()
@@ -192,7 +194,7 @@ export function artworkSvg(
         : d.pattern === "wave"
           ? `<path d="M0 450Q150 250 300 450T600 450V1000H0Z" fill="${d.secondary}"/><path d="M0 530Q150 330 300 530T600 530" fill="none" stroke="${d.accent}" stroke-width="8"/>`
           : "";
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 1000"><rect width="600" height="1000" fill="${d.primary}"/>${imageData ? `<image href="${imageData}" xlink:href="${imageData}" width="600" height="1000" preserveAspectRatio="xMidYMid slice"/>` : motif}${sleeve ? "" : `<g fill="${d.textColor}" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold"><text x="300" y="${back ? 190 : 310}" font-size="32" textLength="${back ? Math.max(d.player.length * 22, 1) : Math.max(d.team.length * 19, 1)}" lengthAdjust="spacingAndGlyphs">${escapeXml(back ? d.player : d.team)}</text>${back ? `<text x="300" y="540" font-size="260">${escapeXml(d.number)}</text>` : `<path d="M265 160h70v60l-35 20-35-20Z" fill="${d.accent}"/><text x="300" y="202" font-size="24" fill="${d.primary}">JC</text>`}</g>`}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 1000"><rect width="600" height="1000" fill="${d.primary}"/>${imageData ? `<image href="${imageData}" xlink:href="${imageData}" width="600" height="1000" preserveAspectRatio="xMidYMid slice"/>` : motif}${sleeve ? "" : `<g fill="${d.textColor}" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold"><text x="300" y="${back ? 190 : 310}" font-size="32" textLength="${back ? Math.max(d.player.length * 22, 1) : Math.max(d.team.length * 19, 1)}" lengthAdjust="spacingAndGlyphs">${escapeXml(back ? d.player : d.team)}</text>${back ? `<text x="300" y="540" font-size="260">${escapeXml(d.number)}</text>` : `<path d="M265 160h70v60l-35 20-35-20Z" fill="${d.accent}"/><text x="300" y="202" font-size="24" fill="${d.primary}">DT</text>`}</g>`}</svg>`;
 }
 export function panelSvg(
   d: Design,

@@ -1,3 +1,4 @@
+import { registerGarmentRoutes } from "./garments";
 import express, {
   type Request,
   type Response,
@@ -72,6 +73,7 @@ export function createApi(
   options: { aiKey?: string; secureCookies?: boolean; origin?: string } = {}
 ) {
   const api = express.Router();
+  api.use("/garments/import", express.json({ limit: "14mb" }));
   api.use("/artwork/upload", express.json({ limit: "30mb" }));
   api.use(express.json({ limit: "2mb" }));
   const one = (sql: string, ...p: any[]) =>
@@ -320,7 +322,7 @@ export function createApi(
           "INSERT INTO workspaces(id,slug,name,demo) VALUES(?,?,?,1)",
           wid,
           `demo-${wid}`,
-          "Atelier Sport · Demo"
+          "DreamTeam / Demo club"
         );
         run(
           "INSERT INTO accounts VALUES(?,?,?,?,?,?)",
@@ -339,11 +341,11 @@ export function createApi(
           const d: SavedDesign = {
             ...DEFAULT_DESIGN,
             id: randomUUID(),
-            category: category as any,
+            category: "football" as const,
             name: [
               "Athletic · Home 26",
-              "Cricket · Match day",
-              "Studio · Teamwear",
+              "Athletic · Away 26",
+              "Athletic · Training 26",
             ][i],
             pattern: ["diagonal", "wave", "stripes"][i] as any,
             primary: ["#12392e", "#163f69", "#302950"][i],
@@ -402,11 +404,27 @@ export function createApi(
       );
     })
   );
+  function checkGarment(a: Actor, id: string | null) {
+    if (!id) return;
+    const row = one(
+      "SELECT data FROM garments WHERE id=? AND workspace_id=?",
+      id,
+      a.workspaceId
+    );
+    if (!row) fail(400, "Capo 3D non disponibile.");
+    const g = JSON.parse(row.data);
+    if (!g.published || g.status !== "ready")
+      fail(
+        400,
+        "Il fabbricante deve prima verificare e pubblicare il capo 3D."
+      );
+  }
   api.post(
     "/designs",
     wrap((req, res) => {
       const a = actor(req),
         p = designSchema.parse(req.body);
+      checkGarment(a, p.garmentId);
       const art = image(a, p.artworkId);
       if (art && art.account_id !== a.accountId)
         fail(403, "Immagine non disponibile.");
@@ -439,6 +457,7 @@ export function createApi(
         prev: SavedDesign = JSON.parse(old.data);
       if (p.revision !== prev.revision)
         fail(409, "Il design è stato modificato: ricarica la pagina.");
+      checkGarment(a, p.garmentId);
       const art = image(a, p.artworkId);
       if (art && art.account_id !== a.accountId)
         fail(403, "Immagine non disponibile.");
@@ -803,6 +822,7 @@ export function createApi(
       res.json({ id, data });
     })
   );
+  registerGarmentRoutes(api, db, { actor, owner, wrap, fail, limit });
   api.use((_req, res) => res.status(404).json({ error: "API non trovata." }));
   api.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof z.ZodError)

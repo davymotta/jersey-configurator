@@ -20,7 +20,7 @@ test("demo design → 3D → order → approved pattern → production pack", as
     animations: "disabled",
     style: "[data-sonner-toaster] { display: none; }",
   });
-  await page.getByRole("link", { name: "Apri il design studio" }).click();
+  await page.getByRole("link", { name: "Entra nel design studio" }).click();
   await page
     .getByLabel("Nome del design", { exact: true })
     .fill("Falcons — Away 2026");
@@ -169,4 +169,66 @@ test("manufacturer registration and dedicated customer storefront", async ({
     customer.getByRole("link", { name: "I miei ordini", exact: true })
   ).toBeVisible();
   await context.close();
+});
+
+test("DreamTeam imports DXF panels with explicit sewing and preserves millimetres", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Esplora la demo" }).click();
+  await page.getByRole("link", { name: "Garment lab", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Dal piano. Al campo." })
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Apri capo di prova" }).click();
+  await expect(page.locator(".panel-item")).toHaveCount(4);
+  await expect(page.locator(".seam-list>div")).toHaveCount(10);
+  await expect(page.locator(".pattern-dimensions strong")).toContainText(
+    "550 × 665 MM"
+  );
+  await page
+    .getByRole("combobox", { name: "Contorni importati" })
+    .selectOption("cut");
+  await expect(
+    page.getByRole("button", { name: "Simula capo", exact: true })
+  ).toBeDisabled();
+  await page
+    .getByRole("combobox", { name: "Contorni importati" })
+    .selectOption("sewing");
+  await page.getByRole("button", { name: "Salva", exact: true }).click();
+  await expect(
+    page.getByText("Configurazione salvata.", { exact: true })
+  ).toBeVisible();
+  await page.screenshot({
+    path: "artifacts/garment-lab.png",
+    fullPage: true,
+    animations: "disabled",
+    style: "[data-sonner-toaster] { display:none; }",
+  });
+});
+
+test("Three.js performs actual progressive path tracing", async ({ page }) => {
+  test.setTimeout(100000);
+  const errors: string[] = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.goto("/");
+  await page.getByRole("button", { name: "Esplora la demo" }).click();
+  await page.goto("/studio");
+  await expect(page.locator(".render-loading")).toHaveCount(0, {
+    timeout: 15000,
+  });
+  await expect(page.locator(".three-canvas canvas")).toBeVisible();
+  await page.getByRole("button", { name: "Path tracing", exact: true }).click();
+  await expect(page.locator(".render-info")).toContainText(
+    /PATH TRACING \/ [1-9]\d* SAMPLES/,
+    { timeout: 75000 }
+  );
+  await page.screenshot({
+    path: "artifacts/path-tracing.png",
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page.getByRole("button", { name: "Live PBR", exact: true }).click();
+  await expect(page.locator(".render-info")).toContainText("MATERIALI TESSILI");
+  expect(errors).toEqual([]);
 });

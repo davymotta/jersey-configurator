@@ -14,7 +14,8 @@ export function openStore(filename: string) {
     CREATE TABLE IF NOT EXISTS patterns(id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id), data TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id), account_id TEXT NOT NULL REFERENCES accounts(id), data TEXT NOT NULL, request_key TEXT NOT NULL, UNIQUE(account_id,request_key));
     CREATE TABLE IF NOT EXISTS artwork(id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id), account_id TEXT NOT NULL REFERENCES accounts(id), data TEXT NOT NULL, pixels INTEGER NOT NULL);
-    PRAGMA user_version=1;`);
+    CREATE TABLE IF NOT EXISTS garments(id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id), data TEXT NOT NULL);
+    PRAGMA user_version=2;`);
   return db;
 }
 export type Store = ReturnType<typeof openStore>;

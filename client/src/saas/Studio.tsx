@@ -51,6 +51,16 @@ export default function Studio({
     [imageData, setImageData] = useState<string>(),
     [aiBusy, setAiBusy] = useState(false),
     [orderOpen, setOrderOpen] = useState(false);
+  const [models, setModels] = useState<
+    { id: string; name: string; published: boolean; status: string }[]
+  >([]);
+  useEffect(() => {
+    api<{ id: string; name: string; published: boolean; status: string }[]>(
+      "/garments"
+    )
+      .then(m => setModels(m.filter(x => x.published && x.status === "ready")))
+      .catch(e => toast.error(e.message));
+  }, []);
   const hydrated = useRef(!!existing);
   useEffect(() => {
     if (existing && !hydrated.current) {
@@ -185,20 +195,29 @@ export default function Studio({
                     onChange={e => update({ name: e.target.value })}
                   />
                 </Field>
-                <Field label="Categoria">
+                <Field label="Capo 3D">
                   <select
-                    value={design.category}
+                    value={design.garmentId || ""}
                     onChange={e =>
-                      update({ category: e.target.value as Design["category"] })
+                      update({
+                        garmentId: e.target.value || null,
+                        category: "football",
+                      })
                     }
                   >
-                    {Object.entries(categoryNames).map(([v, l]) => (
-                      <option key={v} value={v}>
-                        {l}
+                    <option value="">DreamTeam / capo campione</option>
+                    {models.map(m => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
                       </option>
                     ))}
                   </select>
                 </Field>
+                {session.user.role === "owner" && (
+                  <Link className="text-link" href="/garments">
+                    Importa il tuo DXF <ArrowRight size={13} />
+                  </Link>
+                )}
                 <span className="control-section">02 / IL TUO STILE</span>
                 <div className="pattern-options">
                   {(["solid", "diagonal", "stripes", "wave"] as const).map(
@@ -461,7 +480,15 @@ export default function Studio({
                   <div className="subtle">Caricamento anteprima 3D…</div>
                 }
               >
-                <Jersey3D design={design} imageData={imageData} />
+                <Jersey3D
+                  design={design}
+                  imageData={imageData}
+                  assetUrl={
+                    design.garmentId
+                      ? `/api/garments/${design.garmentId}/asset`
+                      : undefined
+                  }
+                />
               </Suspense>
             ) : (
               <FlatJersey
@@ -473,7 +500,7 @@ export default function Studio({
             )}
             <div className="preview-corner">
               <span>
-                JERSEY / {categoryNames[design.category].toUpperCase()}
+                DREAMTEAM / {categoryNames[design.category].toUpperCase()}
               </span>
               <strong>{design.name || "Nuova divisa"}</strong>
             </div>
@@ -486,7 +513,8 @@ export default function Studio({
           <div className="preview-caption">
             <span>
               <Layers size={15} />
-              Modello illustrativo · {categoryNames[design.category]}
+              {design.garmentId ? "Capo da DXF" : "Capo campione"} ·{" "}
+              {categoryNames[design.category]}
             </span>
             <button
               className="text-link"
@@ -503,9 +531,9 @@ export default function Studio({
             </button>
           </div>
           <div className="studio-disclaimer">
-            L’anteprima mostra grafica e colori su un modello generico.
-            Vestibilità, cuciture e pannelli finali dipendono dal cartamodello
-            del fabbricante.
+            {design.garmentId
+              ? "Questo capo deriva dai pannelli e dalla simulazione pubblicati dal fabbricante. La verifica di vestibilità e prestampa resta necessaria."
+              : "Capo campione 3D DreamTeam: serve a progettare la grafica. Importa e simula il tuo DXF nel Garment lab per visualizzare la costruzione del fabbricante."}
           </div>
         </section>
       </div>

@@ -1,6 +1,6 @@
-# Jersey — Design to production
+# DreamTeam — From dream to team
 
-Workspace SaaS per fabbricanti di teamwear DTC: il cliente crea il design, lo vede su un modello 3D e invia una richiesta con taglie e quantità. Il fabbricante approva l'ordine con un cartamodello verificato e scarica il pacchetto dei pannelli per la prestampa sublimatica.
+Workspace SaaS per squadre di calcio e fabbricanti di divise DTC: il cliente crea il design, lo vede su un modello 3D e invia una richiesta con taglie e quantità. Il fabbricante approva l'ordine con un cartamodello verificato e scarica il pacchetto dei pannelli per la prestampa sublimatica.
 
 Questa versione è un MVP funzionante da validare con un fabbricante pilota. Non è ancora un SaaS commerciale completo: abbonamenti, pagamenti, verifica email e recupero password non sono implementati.
 
@@ -22,7 +22,7 @@ Il database viene creato automaticamente in `data/jersey.sqlite`, con WAL e fore
 
 1. Il fabbricante registra il proprio workspace. In **Impostazioni** definisce prezzo indicativo in EUR e minimo d'ordine.
 2. Condivide `/store/<slug>` con i clienti. La registrazione da quel link crea un cliente nel suo workspace, senza permessi di produzione.
-3. Il cliente sceglie calcio, cricket o corporate, modifica palette e pattern, aggiunge squadra, nome e numero. Può caricare PNG/JPEG o generare una grafica se il servizio AI è configurato.
+3. Il cliente sceglie la divisa da calcio, modifica palette e pattern, aggiunge squadra, nome e numero. Può caricare PNG/JPEG o generare una grafica se il servizio AI è configurato.
 4. Il cliente salva e invia una **richiesta d'ordine**: quantità per taglia, contatti, consegna e note. Non viene addebitato alcun pagamento. Prezzo finale, IVA, spedizione e tempi sono da confermare con il fabbricante.
 5. Il fabbricante importa e approva il proprio cartamodello, seleziona la revisione per l'ordine e approva la richiesta. Il sistema blocca l'approvazione se mancano taglie, la categoria non corrisponde o la grafica raster ha DPI insufficienti.
 6. Il fabbricante scarica il pacchetto ZIP e avanza l'ordine: approvato → in produzione → spedito. È possibile annullare una richiesta o un ordine approvato.
@@ -31,9 +31,33 @@ Nome e numero valgono per tutti i capi dell'ordine. Le distinte con nomi/numeri 
 
 ## Anteprima e cartamodello
 
-Il modello Three.js è un volume illustrativo ruotabile con fronte, retro e grafica condivisa con l'anteprima 2D. Non è una simulazione fisica, un capo drappeggiato dal CAD o una verifica di vestibilità. Le tre categorie condividono la silhouette; colletti specifici e modelli GLB dei singoli prodotti vanno ancora collegati.
+Il viewer usa una mesh GLB con materiali tessili PBR, illuminazione ambiente, ombre e modalità di path tracing progressivo. Il capo showroom è originale, riproducibile con `pipeline/showroom.py` e dichiarato come campione. Il modello non viene più costruito estrudendo una sagoma 2D.
 
-L'esportazione del concept è distinta dal pacchetto produttivo. La silhouette 3D **non viene trasformata automaticamente in un cartamodello**.
+Il nuovo **Garment lab** permette al fabbricante di importare un DXF ASCII, verificare unità e contorni, assegnare quattro pannelli, definire le cuciture e avviare il worker Blender. Le geometrie e i modelli non pubblicati restano privati. Solo una revisione entro le soglie tecniche, verificata dal fabbricante, può essere selezionata dal cliente nel design studio.
+
+**Il drappeggio da DXF è ancora un prototipo tecnico.** Il campione eseguito ha prodotto un GLB ma anche cuciture non chiuse: l'interfaccia lo blocca per la pubblicazione. Non è un equivalente validato di CLO. Leggi [ricerca, repository, risultati numerici e limiti](docs/3d-research.md) prima di usare questa parte per un capo reale.
+
+Per abilitare l'importazione:
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r pipeline/requirements.txt
+# Imposta PYTHON_BIN al percorso assoluto di .venv/bin/python
+# Configura BLENDER_BIN con Blender 4.3+ per la simulazione
+```
+
+Il deploy deve includere anche la directory `pipeline/` e le dipendenze Python/Blender: gli script non vengono incorporati nel bundle Node.
+
+I file restano nella directory privata `data/garments` (oppure `GARMENT_DATA_PATH`), con il DXF originale e un input/GLB/report per job. Le revisioni pubblicate sono congelate. Il worker è a coda singola e viene terminato dopo quattro minuti; al riavvio del server un job interrotto viene segnalato come fallito. È una soluzione per il pilota, da portare in un servizio di worker isolato prima dell'accesso pubblico.
+
+Per riprodurre il campione di sviluppo:
+
+```sh
+python3 pipeline/example.py /tmp/dreamteam-sample
+blender -b --factory-startup --disable-autoexec -t 2 --python pipeline/simulate.py -- /tmp/dreamteam-sample/studio-jersey.json /tmp/dreamteam-sample/garment.glb
+```
+
+Il modello personalizzato deriva dal risultato del worker, non dal capo campione. Una simulazione non approva il cartamodello per taglio e stampa: il modulo **Cartamodelli** rimane la verifica distinta dei pannelli di produzione. L'esportazione del concept è distinta dal pacchetto produttivo.
 
 In **Cartamodelli → Esempio di formato** si scarica il formato JSON. L'esempio contiene rettangoli esplicativi, è non approvato e non va usato per tagliare un capo. Per ogni taglia reale servono quattro pannelli con chiavi `front`, `back`, `left-sleeve`, `right-sleeve`:
 
@@ -91,11 +115,14 @@ SQLite e limiti di frequenza in memoria sono una scelta per l'istanza pilota. Pr
 ```sh
 pnpm check
 pnpm test
+pnpm test:dxf
 pnpm build
 pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-I test API coprono isolamento dei tenant, ruoli cliente/fabbricante, login/logout, origine delle richieste, idempotenza, copie immutabili, conflitti di revisione, minimi d'ordine, stato della produzione, validazione delle geometrie, esportazione ZIP e DPI. I test browser percorrono demo, modifica in 3D/2D, salvataggio, ordine, cartamodello, approvazione, ZIP, produzione, viewport mobile e registrazione cliente da link dedicato. Gli screenshot vengono salvati in `artifacts/`.
+I test Python verificano importazione, unità e contorni del DXF. I test API coprono isolamento dei tenant, ruoli cliente/fabbricante, login/logout, origine delle richieste, idempotenza, copie immutabili, conflitti di revisione, minimi d'ordine, stato della produzione, validazione delle geometrie, esportazione ZIP e DPI. I test browser percorrono demo, modifica in 3D/2D, salvataggio, ordine, cartamodello, approvazione, ZIP, produzione, viewport mobile e registrazione cliente da link dedicato. Gli screenshot vengono salvati in `artifacts/`.
+
+I campi di categoria storici cricket/corporate restano nell’API per compatibilità dei dati, mentre l’interfaccia e il percorso di prodotto sono centrati sul calcio.
 
 Il codice attivo è in `client/src`, `server/index.ts`, `server/saas` e `shared/production.ts`. Il repository conserva anche i file del prototipo originale alla radice e lo scaffold Manus in `server/_core`; non costituiscono il flusso di autenticazione o produzione di questa versione. I vecchi utenti MySQL non vengono migrati automaticamente.
