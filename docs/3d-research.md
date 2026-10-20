@@ -15,6 +15,8 @@ Ricognizione del 20 ottobre 2026. Il prodotto è dedicato alle divise delle squa
 | [Garment Tool](https://joseconseco.github.io/GarmentToolDocs/quick_guide/)                             | Interfaccia Blender per curve, cuciture e mesh di simulazione                            | Add-on distribuito separatamente dall'autore                                                                                              | Riferimento di workflow; non installato o redistribuito.                                                                                                                                                     |
 | [SewFormer](https://github.com/sail-sg/sewformer) / [DressCode](https://github.com/IHe-KaiI/DressCode) | Ricostruzione/generazione di cartamodelli da immagine o testo                            | Pipeline di ricerca e dipendenze/checkpoint da verificare                                                                                 | Da studiare per un modulo AI futuro. Non risolvono da soli il caso del DXF già esistente e non sono integrati.                                                                                               |
 
+I testi delle licenze dei componenti JavaScript 3D distribuiti sono inclusi in `client/public/THIRD_PARTY_3D_LICENSES.txt`. Il modello showroom e i file di prova sono generati dagli script originali del progetto.
+
 Le decisioni sono basate sulla documentazione primaria e sull'ispezione dei checkout. Una descrizione o una demo di un repository non costituisce una verifica del suo solver. In particolare il solver completo di Seamer, GarmentCode e OpenSew non è stato eseguito in questa sessione.
 
 ## Architettura realizzata
